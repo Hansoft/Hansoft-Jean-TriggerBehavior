@@ -18,12 +18,27 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
             return new ExpressionValue(ExpressionValueType.STRING, task.Priority.ToString());
         }
         
-        
+
+        /// <summary>
+        /// Adds the field this token is listening to to the incoming list.
+        /// </summary>
+        /// <param name="list">the list to add the field to</param>
         public void AddAffectedBy(ref List<ListenerData> list)
         {
+            list.AddRange(GetAssignmentFields());
+        }
+
+        /// <summary>
+        /// Returns the field that this assignment will affect.
+        /// </summary>
+        /// <returns>the field that this assignment will affect</returns>
+        public List<ListenerData> GetAssignmentFields()
+        {
+            List<ListenerData> list = new List<ListenerData>();
             list.Add(new ListenerData(EHPMTaskField.BacklogPriority));
             list.Add(new ListenerData(EHPMTaskField.BugPriority));
             list.Add(new ListenerData(EHPMTaskField.SprintPriority));
+            return list;
         }
 
         /*

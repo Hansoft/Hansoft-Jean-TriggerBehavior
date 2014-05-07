@@ -19,11 +19,6 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
         }
         
         
-        public void AddAffectedBy(ref List<ListenerData> list)
-        {
-            list.Add(new ListenerData(EHPMTaskField.ComplexityPoints));
-        }
-
         /*
          * An object that implements this class can be assigned values.
          * This function will be called when an item is on the left hand side of an
@@ -34,5 +29,20 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
             task.Points = value.ToInt();
         }
 
+        public void AddAffectedBy(ref List<ListenerData> list)
+        {
+            list.AddRange(GetAssignmentFields());
+        }
+        
+        /// <summary>
+        /// Returns the field that this assignment will affect.
+        /// </summary>
+        /// <returns>the field that this assignment will affect</returns>
+        public List<ListenerData> GetAssignmentFields()
+        {
+            List<ListenerData> list = new List<ListenerData>();
+            list.Add(new ListenerData(EHPMTaskField.ComplexityPoints));
+            return list;
+        }
     }
 }

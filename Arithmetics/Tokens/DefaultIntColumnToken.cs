@@ -31,12 +31,25 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
             return new ExpressionValue(ExpressionValueType.STRING, task.GetType().GetProperty(property).GetValue(task));
         }
 
-
+        /// <summary>
+        /// Adds the field this token is listening to to the incoming list.
+        /// </summary>
+        /// <param name="list">the list to add the field to</param>
         public void AddAffectedBy(ref List<ListenerData> list)
         {
-            list.Add(new ListenerData(taskField));
+            list.AddRange(GetAssignmentFields());
         }
 
+        /// <summary>
+        /// Returns the field that this assignment will affect.
+        /// </summary>
+        /// <returns>the field that this assignment will affect</returns>
+        public List<ListenerData> GetAssignmentFields()
+        {
+            List<ListenerData> list = new List<ListenerData>();
+            list.Add(new ListenerData(taskField));
+            return list;
+        }
         /*
          * An object that implements this class can be assigned values.
          * This function will be called when an item is on the left hand side of an

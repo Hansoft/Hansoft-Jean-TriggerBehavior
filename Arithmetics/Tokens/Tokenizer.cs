@@ -5,30 +5,45 @@ using System.Text;
 
 using HPMSdk;
 using Hansoft.ObjectWrapper;
+using System.Globalization;
 
 
 namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
 {
     class Tokenizer
     {
-        public static IExpressionItem Compile(IntermediateToken token)
+        /// <summary>
+        /// Creates a token from the expression.
+        /// </summary>
+        /// <param name="expression">The expression that will be parsed</param>
+        /// <param name="errors">A reference to a list of strings that will be filled up with all the parse errors</param>
+        /// <returns>An token that will be able to evaluated on a task. Null if there are any errors in the parsing process.</returns>
+        public static IExpressionItem Compile(string token, ref List<string> errors)
         {
+            token = token.Trim();
+            if (token == "")
+                return null;
             int value;
-            bool isInt = int.TryParse(token.Token, out value);
+            bool isInt = int.TryParse(token, out value);
             if (isInt)
                 return new IntToken(value);
             bool state;
-            bool isBool = bool.TryParse(token.Token, out state);
+            bool isBool = bool.TryParse(token, out state);
             if (isBool)
                 return new BoolToken(state);
-            float fVal;
-            bool isFloat = float.TryParse(token.Token, out fVal);
-            if (isFloat)
-                return new FloatToken(fVal);
-
-            if (token.Token.StartsWith("$"))
+            try
             {
-                string columnName = token.Token.Substring(1, token.Token.Length-1);
+                float fVal = float.Parse(token, CultureInfo.InvariantCulture);
+                return new FloatToken(fVal);
+            }
+            catch(Exception)
+            {
+                //Yes, ugly. But tryParse does not allow for cultural differences
+            }
+
+            if (token.StartsWith("$"))
+            {
+                string columnName = token.Substring(1, token.Length-1);
                 switch(columnName)
                 {
                     case ("ComplexityPoints"):
@@ -56,8 +71,10 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
                     case ("DetailedDescription"):
                         return new DefaultStringColumnToken(EHPMTaskField.DetailedDescription, EHPMProjectDefaultColumn.DetailedDescription, "DetailedDescription");
                     case ("WorkRemaining"):
-                        return new DefaultFloatColumnToken(EHPMTaskField.WorkRemaining, EHPMProjectDefaultColumn.WorkRemaining, "WorkRemaining");                        
-
+                        return new DefaultFloatColumnToken(EHPMTaskField.WorkRemaining, EHPMProjectDefaultColumn.WorkRemaining, "WorkRemaining");
+                    case ("Assignees"):
+                        return new AssigneesToken();               
+         
                     case ("SprintResourceAllocation"):
                     case ("LastUpdatedTime"):
                     case ("UserStoryFlag"):
@@ -82,20 +99,21 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
                     case ("AttachedDocuments"):
                     case ("DelegateTo"):
                     case ("SprintAllocatedResources"):
-
-                        throw new ArgumentException("Not implemented yet");
+                        errors.Add(columnName + " is not yet implemented");
+                        return new UnknownToken();
                     default:
                         return new CustomColumnToken(columnName);
                 }
             }
-            else // Constant tokens
+            else
             {
-                switch(token.Token)
+                switch(token)
                 {
                     case ("TIMENOW"):
                         return new TimeNowToken();
                     default:
-                        return new StringToken(token.Token);
+                        errors.Add("Unkown token: " + token);
+                        return new UnknownToken();
                 }
             }
         }

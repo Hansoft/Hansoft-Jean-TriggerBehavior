@@ -1,5 +1,6 @@
 ﻿using Hansoft.ObjectWrapper.CustomColumnValues;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,7 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
         FLOAT,
         BOOL,
         STRING,
+        LIST, // Remember that a expression value of type list will contain expression values once it is evaluated.
         CUSTOMVALUE
     }
 
@@ -39,10 +41,18 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
             get { return value; }
             set { this.value = value; }
         }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
         
         public static ExpressionValue operator +(ExpressionValue left, ExpressionValue right)
         {
-            if (left.Type == ExpressionValueType.FLOAT)
+            // Always convert to string if one of the sides is a string expression
+            if (left.Type == ExpressionValueType.STRING || right.Type == ExpressionValueType.STRING)
+                return new ExpressionValue(ExpressionValueType.STRING, left.ToString() + right.ToString());
+            else if (left.Type == ExpressionValueType.FLOAT)
                 return new ExpressionValue(ExpressionValueType.FLOAT, left.ToFloat() + right.ToFloat());
             else if (left.Type == ExpressionValueType.INT)
             {
@@ -51,6 +61,10 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
                 else
                     return new ExpressionValue(ExpressionValueType.INT, left.ToInt() + right.ToInt());
             }
+            else if (left.Type == ExpressionValueType.LIST)
+            {
+                ((IList)left.Value).Add(right.Value);
+            }
             return new ExpressionValue(ExpressionValueType.STRING, left.ToString() + right.ToString());
         }
 
@@ -58,6 +72,10 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
         {
             if (left.Type == ExpressionValueType.FLOAT || right.Type == ExpressionValueType.FLOAT)
                 return new ExpressionValue(ExpressionValueType.FLOAT, left.ToFloat() * right.ToFloat());
+            else if (left.Type == ExpressionValueType.LIST)
+            {
+                ((IList)left.Value).Add(right);
+            }
             return new ExpressionValue(ExpressionValueType.INT, left.ToInt() * right.ToInt());
         }
 
@@ -130,12 +148,41 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
             return value.ToString();
         }
 
+        public IList ToStringList()
+        {
+            List<String> values = new List<String>();
+            if (Type == ExpressionValueType.LIST)
+            {
+                IList eList = Value as IList;
+                foreach (object obj in eList)
+                {
+                    if (!(obj is ExpressionValue))
+                    {
+                        throw new ArgumentException("Something went bad in a list. Should be filled with expression values.");
+                    }
+                    string str = (obj as ExpressionValue).Value as string;
+                    if (str == null)
+                    {
+                        throw new ArgumentException("Cannot convert to a string list unless all expression values are strings");
+                    }
+                    values.Add(str);
+                }
+            }
+            else
+            {
+                values.Add(ToString());
+            }
+            return values;
+        }
+
         public bool ToBoolean()
         {
             switch (type)
             {
                 case (ExpressionValueType.UNKNOWN):
                     throw new ArgumentException("Can't cast unkowns to booleans.");
+                case (ExpressionValueType.LIST):
+                    throw new ArgumentException("Can't cast lists to booleans.");
                 case (ExpressionValueType.BOOL):
                     {
                         return Convert.ToBoolean(value);
@@ -168,6 +215,8 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
         {
             switch (type)
             {
+                case (ExpressionValueType.LIST):
+                    throw new ArgumentException("Can't cast lists to int.");
                 case (ExpressionValueType.UNKNOWN):
                     throw new ArgumentException("Can't cast unkowns to int.");
                 case (ExpressionValueType.BOOL):
@@ -202,6 +251,8 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
         {
             switch (type)
             {
+                case (ExpressionValueType.LIST):
+                    throw new ArgumentException("Can't cast lists to float.");
                 case (ExpressionValueType.UNKNOWN):
                     throw new ArgumentException("Can't cast unkowns to float.");
                 case (ExpressionValueType.BOOL):

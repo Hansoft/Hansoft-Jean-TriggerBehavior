@@ -42,6 +42,7 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
 
         private static OperatorDefintion[] operatorDefitions = 
         {
+            //OperatorString, OperatorType, Precendence 
             new OperatorDefintion("+", OperatorType.OP_ADD,4),
             new OperatorDefintion("-", OperatorType.OP_SUB,4),
             new OperatorDefintion("*", OperatorType.OP_MUL,3),
@@ -67,11 +68,18 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
             set { this.operatorID = value; }
         }
 
+        /// <summary>
+        /// Only get, returns true if the operator has expressions assignend on both sides.
+        /// </summary>
+        public bool IsComplete
+        {
+            get { return Left != null && Right != null;}
+        }
 
         /*
          * Returns an operator if the string starts with that otherwise null.
          */
-        private static Operator GetOperator(string expression, int currentPosition, ref int endPostion)
+        public static Operator GetOperator(string expression, int currentPosition, ref int endPostion)
         {
             for(int i = 0; i<operatorDefitions.Length; ++i)
             {
@@ -86,6 +94,7 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
             }
             return null;
         }
+
 
 
         public static Operator Find(string expression, ref int startPos, ref int endPos)

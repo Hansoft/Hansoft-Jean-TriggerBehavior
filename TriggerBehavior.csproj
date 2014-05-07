@@ -69,6 +69,7 @@
     <Compile Include="Arithmetics\IExpressionItem.cs" />
     <Compile Include="Arithmetics\ExpressionValue.cs" />
     <Compile Include="Arithmetics\Operator.cs" />
+    <Compile Include="Arithmetics\Tokens\AssigneesToken.cs" />
     <Compile Include="Arithmetics\Tokens\BoolToken.cs" />
     <Compile Include="Arithmetics\Tokens\ComplexityPointsToken.cs" />
     <Compile Include="Arithmetics\Tokens\DefaultStringColumnToken.cs" />
@@ -77,12 +78,13 @@
     <Compile Include="Arithmetics\Tokens\DefaultEnumColumnToken.cs" />
     <Compile Include="Arithmetics\Tokens\CustomColumnToken.cs" />
     <Compile Include="Arithmetics\Tokens\FloatToken.cs" />
-    <Compile Include="Arithmetics\Tokens\IntermediateToken.cs" />
     <Compile Include="Arithmetics\Tokens\IntToken.cs" />
+    <Compile Include="Arithmetics\Tokens\ListToken.cs" />
     <Compile Include="Arithmetics\Tokens\StringToken.cs" />
     <Compile Include="Arithmetics\Tokens\TimeNowToken.cs" />
     <Compile Include="Arithmetics\Tokens\Tokenizer.cs" />
     <Compile Include="Arithmetics\Tokens\PriorityToken.cs" />
+    <Compile Include="Arithmetics\Tokens\UnknownToken.cs" />
     <Compile Include="Arithmetics\Tokens\WorkflowStatusToken.cs" />
     <Compile Include="Arithmetics\ListenerData.cs" />
     <Compile Include="TriggerBehavior.cs" />

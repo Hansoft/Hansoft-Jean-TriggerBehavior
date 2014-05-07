@@ -31,17 +31,34 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
             return new ExpressionValue(ExpressionValueType.STRING, task.GetType().GetProperty(property).GetValue(task));
         }
 
-
+        /// <summary>
+        /// Adds the field this token is listening to to the incoming list.
+        /// </summary>
+        /// <param name="list">the list to add the field to</param>
         public void AddAffectedBy(ref List<ListenerData> list)
         {
-            list.Add(new ListenerData(taskField));
+            list.AddRange(GetAssignmentFields());
         }
 
-        /*
-         * An object that implements this class can be assigned values.
-         * This function will be called when an item is on the left hand side of an
-         * assignment.
-         */                      
+        /// <summary>
+        /// Returns the field that this assignment will affect.
+        /// </summary>
+        /// <returns>the field that this assignment will affect</returns>
+        public List<ListenerData> GetAssignmentFields()
+        {
+            List<ListenerData> list = new List<ListenerData>();
+            list.Add(new ListenerData(taskField));
+            return list;
+        } 
+        
+       
+        /// <summary>
+        /// Sets the value of a default column of type float to the expression value.
+        /// Since the expression value will be converted to float it might generate
+        /// an exception if the expression value cannot be converted.
+        /// </summary>
+        /// <param name="task">the task to set the column value for</param>
+        /// <param name="value">the value to set</param>
         public void SetValue(Task task, ExpressionValue value)
         {
             task.GetType().GetProperty(property).SetValue(task, value.ToFloat());

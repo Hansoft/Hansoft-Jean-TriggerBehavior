@@ -16,7 +16,28 @@ using System.Data;
 using System.Diagnostics;
 using Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics;
 
-
+/*
+ * TriggerBehavior is a behavior part of Jean that allows actions to be triggered when tasks changes and a condition on the specific task is matched.
+ * Typically this can be used when you want to set column values based of some other column, or if you want to make an arithmetic calculation on one
+ * column, where the value should be put into another column.
+ * Example syntax:
+ * <TriggerBehavior HansoftProject="Test Cases" View="Backlog">
+      <Condition Expression="$WorkflowStatus == 'Test Passed'">
+        $Last Run = TIMENOW
+        $Latest Pass = TIMENOW
+        $Times Run = $Times Run + 1
+        $Times Passed = $Times Passed + 1
+      </Condition>
+      <Condition Expression="$WorkflowStatus == 'Test Failed'">
+        $Last Run = TIMENOW
+        $Times Run = $Times Run + 1
+      </Condition>
+      <Condition Expression="$Times Run > 5">
+        $Test steps = $Test steps + 'Number of times run: '+ $Times Run +'\n'
+      </Condition>
+    </TriggerBehavior>
+ * 
+ */
 namespace Hansoft.Jean.Behavior.TriggerBehavior
 {
     public class TriggerBehavior : AbstractBehavior
@@ -77,26 +98,33 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior
         // TODO: Subject to refactoring
         private List<Condition> GetConditions(XmlElement parent)
         {
-            List<Condition> condtitions = new List<Condition>();
+            List<Condition> conditions = new List<Condition>();
+            List<string> errors = new List<string>();
             foreach (XmlNode node in parent.ChildNodes)
             {
                 if (node is XmlElement)
                 {
                     XmlElement el = (XmlElement)node;
-                    Condition condition = new Condition(el.GetAttribute("Expression"));
-                    foreach (XmlNode assignmentNode in el.ChildNodes)
+                    Condition condition = new Condition();
+                    condition.parse(el.GetAttribute("Expression"), ref errors);
+                    string[] expressions = el.InnerText.Split('\n');
+                    foreach (string expression in expressions)
                     {
-                        if (assignmentNode is XmlElement)
+                        //Only make assignments from the expressions that contains an assignment operator
+                        if(expression.Contains("="))
                         {
-                            XmlElement assignmentElem = (XmlElement)assignmentNode;
-                            Assignment assignment = Assignment.parse(assignmentElem.GetAttribute("Expression"));
+                            Assignment assignment = new Assignment();
+                            assignment.parse(expression, ref errors);
                             condition.AddAssigment(assignment);
                         }
                     }
-                    condtitions.Add(condition);
+                    condition.FindInfiniteLoops(ref errors);
+                    conditions.Add(condition);
                 }
             }
-            return condtitions;
+            if (errors.Count > 0)
+                throw new ArgumentException("Found errors in Triggerbehavior: " + errors.ToString());
+            return conditions;
         }
 
         //Returns true if the task is in the subset of project views this behaviour is monitoring
@@ -187,15 +215,6 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior
 
         public override void OnTaskMove(TaskMoveEventArgs e)
         {
-            /* TODO: Figure out which tasks was moved.
-             if (initializationOK)
-            {
-                foreach (HPMChangeCallbackData_TaskCreateUnifiedTask taskData in e.Data.)
-                {
-                    Task task = Task.GetTask(taskData.m_TaskRefID);
-                    EvaluateTask(task);
-                }
-            }*/
         }
     }
 }

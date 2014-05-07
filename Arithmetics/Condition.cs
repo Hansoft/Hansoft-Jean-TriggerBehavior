@@ -14,18 +14,56 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
         private Expression expression;
         private string expressionStr; 
 
-        public Condition(string str)
+        public Condition()
         {
-            expressionStr = str;
-            this.expression = Expression.parse(str);
+            assigments = new List<Assignment>();
+        }
+
+        /// <summary>
+        /// Parses the string and creates a conditional expression.
+        /// </summary>
+        /// <param name="expressionStr"> The string to create a condition for</param>
+        /// <param name="errors"> The list of errors that came up during parsing</param>
+        public void parse(string expressionStr, ref List<string> errors)
+        {
+            this.expressionStr = expressionStr;
+            this.expression = Expression.parse(expressionStr, ref errors);
+            if (expression == null)
+            {
+                errors.Add("Failed to parse the expression: " + expressionStr);
+                return;
+            }
             affectedBy = new List<ListenerData>();
             expression.AddAffectedBy(ref affectedBy);
-            assigments = new List<Assignment>();
         }
 
         public void AddAssigment(Assignment assignment)
         {
             assigments.Add(assignment);
+        }
+
+        /// <summary>
+        /// Looks through the expression and it's statements to find potential infinite loops.
+        /// If a loop is found it will return true and add an error to the list.
+        /// </summary>
+        /// <param name="errors">errors will be added to the list</param>
+        /// <returns></returns>
+        public bool FindInfiniteLoops(ref List<string> errors)
+        {
+            bool foundLoop = false;
+            List<ListenerData> assignmentFields = new List<ListenerData>();
+            foreach (Assignment assignment in assigments)
+                assignmentFields.AddRange(assignment.GetAssignmentFields());
+
+            foreach(ListenerData data in affectedBy)
+            {
+                if(assignmentFields.Contains(data))
+                {
+                    foundLoop = true;
+                    errors.Add("Found a possible infinite loop in condition (" + expressionStr + "). Where the field: (" + data.TaskField + ", " + data.CustomColumnName + "). Exists in both condition and assignement.");
+                }
+            }
+            return foundLoop;
         }
 
         public string ExpressionStr

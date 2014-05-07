@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Hansoft.ObjectWrapper;
 using Hansoft.ObjectWrapper.CustomColumnValues;
+using System.Collections;
 
 namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
 {
@@ -63,7 +64,18 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
 
         public void AddAffectedBy(ref List<ListenerData> list)
         {
+            list.AddRange(GetAssignmentFields());
+        }
+        
+        /// <summary>
+        /// Returns the field that this assignment will affect.
+        /// </summary>
+        /// <returns>the field that this assignment will affect</returns>
+        public List<ListenerData> GetAssignmentFields()
+        {
+            List<ListenerData> list = new List<ListenerData>();
             list.Add(new ListenerData(EHPMTaskField.CustomColumnData, name));
+            return list;
         }
 
         /*
@@ -80,9 +92,27 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
             {
                 case (EHPMProjectCustomColumnsColumnType.DateTime):
                 case (EHPMProjectCustomColumnsColumnType.DateTimeWithTime):
+                    {
+                        if(value.Type == ExpressionValueType.CUSTOMVALUE)
+                            task.SetCustomColumnValue(name, value.Value);                        
+                        else if(value.Type == ExpressionValueType.STRING)
+                            task.SetCustomColumnValue(name, HPMUtilities.HPMDateTime(DateTime.Parse(value.Value.ToString()), customColumn.m_Type == EHPMProjectCustomColumnsColumnType.DateTime));
+                        else
+                            throw new ArgumentException("Cannot assign anything but custom values and strings to a date time column.");
+                        break;
+                    }
                 case (EHPMProjectCustomColumnsColumnType.DropList):
-                case (EHPMProjectCustomColumnsColumnType.Hyperlink):
+                    {
+                        task.SetCustomColumnValue(name, CustomColumnValue.FromEndUserString(task, customColumn, value.ToString()));      
+                        break;
+                    }
                 case (EHPMProjectCustomColumnsColumnType.MultiSelectionDropList):
+                    {
+                        IList strValues = value.ToStringList();
+                        task.SetCustomColumnValue(name, MultipleSelectionValue.FromStringList(task, customColumn, strValues));
+                        break;
+                    }
+
                 case (EHPMProjectCustomColumnsColumnType.Resources):
                     {
                         task.SetCustomColumnValue(name, value.Value);
@@ -90,6 +120,7 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
                     }
                 case (EHPMProjectCustomColumnsColumnType.MultiLineText):
                 case (EHPMProjectCustomColumnsColumnType.Text):
+                case (EHPMProjectCustomColumnsColumnType.Hyperlink):
                     {
                         task.SetCustomColumnValue(name, value.ToString());
                         break;
