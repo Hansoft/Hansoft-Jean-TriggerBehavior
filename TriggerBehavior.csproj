@@ -67,7 +67,8 @@
     <Compile Include="Arithmetics\Assignment.cs" />
     <Compile Include="Arithmetics\Expression.cs" />
     <Compile Include="Arithmetics\IExpressionItem.cs" />
-    <Compile Include="Arithmetics\ExpressionValue.cs" />
+    <Compile Include="Arithmetics\Value\BoolExpressionValue.cs" />
+    <Compile Include="Arithmetics\Value\ExpressionValue.cs" />
     <Compile Include="Arithmetics\Operator.cs" />
     <Compile Include="Arithmetics\Tokens\AssigneesToken.cs" />
     <Compile Include="Arithmetics\Tokens\BoolToken.cs" />
@@ -87,6 +88,11 @@
     <Compile Include="Arithmetics\Tokens\UnknownToken.cs" />
     <Compile Include="Arithmetics\Tokens\WorkflowStatusToken.cs" />
     <Compile Include="Arithmetics\ListenerData.cs" />
+    <Compile Include="Arithmetics\Value\DoubleExpressionValue.cs" />
+    <Compile Include="Arithmetics\Value\DateExpressionValue.cs" />
+    <Compile Include="Arithmetics\Value\IntExpressionValue.cs" />
+    <Compile Include="Arithmetics\Value\ListExpressionValue.cs" />
+    <Compile Include="Arithmetics\Value\StringExpressionValue.cs" />
     <Compile Include="TriggerBehavior.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

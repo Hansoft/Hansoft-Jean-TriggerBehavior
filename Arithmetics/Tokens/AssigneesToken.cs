@@ -6,6 +6,7 @@ using System.Text;
 using Hansoft.ObjectWrapper;
 using Hansoft.ObjectWrapper.CustomColumnValues;
 using System.Collections;
+using Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Value;
 
 namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
 {
@@ -22,9 +23,12 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
         public ExpressionValue Evaluate(Task task)
         {
             List<String> userNames = new List<string>();
-            foreach( User user in task.Assignees)
-                userNames.Add(user.Name);
-            return new ExpressionValue(ExpressionValueType.LIST, userNames);
+            foreach (User user in task.Assignees)
+            {
+                if(user.UniqueID.IsValid())
+                    userNames.Add(user.Name);
+            }
+            return new ListExpressionValue(userNames);
         }
         
         /// <summary>
@@ -55,30 +59,12 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
         public void SetValue(Task task, ExpressionValue value)
         {
             List<string> users = new List<string>();
-            if (value.Type == ExpressionValueType.LIST)
+            IList newAssignments = value.ToList();
+            foreach (object obj in newAssignments)
             {
-                IList newAssignments = value.Value as IList;
-                foreach (object obj in newAssignments)
-                {
-                    string userName = obj as string;
-                    if (userName == null)
-                    {
-                        throw new ArgumentException("Cannot assign other the list of strings or single strings to an assigne token.");
-                    }
-                    users.Add(userName);
-                }
-            }
-            else if(value.Type == ExpressionValueType.STRING)
-            {
-                string userName = value.Value as string;
-                if(userName == null)
-                {
-                    throw new ArgumentException("Cannot assign other the list of strings or single strings to an assigne token.");
-                }
+                string userName = obj.ToString();
                 users.Add(userName);
             }
-            else
-                throw new ArgumentException("Cannot assign other the list of strings or single strings to an assigne token.");
             task.SetResourceAssignmentsFromUserStrings(users);
         }
 

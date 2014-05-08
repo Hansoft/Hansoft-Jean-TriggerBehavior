@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Hansoft.ObjectWrapper;
 using Hansoft.ObjectWrapper.CustomColumnValues;
+using Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Value;
 
 namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
 {
@@ -28,7 +29,7 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
          */
         public ExpressionValue Evaluate(Task task)
         {
-            return new ExpressionValue(ExpressionValueType.STRING, task.GetType().GetProperty(property).GetValue(task));
+            return new DoubleExpressionValue((double)GetType().GetProperty(property).GetValue(task));
         }
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
         /// <param name="value">the value to set</param>
         public void SetValue(Task task, ExpressionValue value)
         {
-            task.GetType().GetProperty(property).SetValue(task, value.ToFloat());
+            task.GetType().GetProperty(property).SetValue(task, value.ToDouble());
         }
     }
 }

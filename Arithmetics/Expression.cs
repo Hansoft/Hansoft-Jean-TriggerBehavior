@@ -5,6 +5,7 @@ using System.Text;
 using Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens;
 using HPMSdk;
 using Hansoft.ObjectWrapper;
+using Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Value;
 
 namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
 {

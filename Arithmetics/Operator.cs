@@ -1,4 +1,5 @@
-﻿using Hansoft.ObjectWrapper;
+﻿using Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Value;
+using Hansoft.ObjectWrapper;
 using HPMSdk;
 using System;
 using System.Collections.Generic;
@@ -154,35 +155,35 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
                     }
                 case (OperatorType.OP_AND):
                     {
-                        return new ExpressionValue(ExpressionValueType.BOOL, left.Evaluate(task).ToBoolean() && right.Evaluate(task).ToBoolean());
+                        return new BoolExpressionValue(left.Evaluate(task).ToBoolean() && right.Evaluate(task).ToBoolean());
                     }
                 case (OperatorType.OP_OR):
                     {
-                        return new ExpressionValue(ExpressionValueType.BOOL, left.Evaluate(task).ToBoolean() || right.Evaluate(task).ToBoolean());
+                        return new BoolExpressionValue(left.Evaluate(task).ToBoolean() || right.Evaluate(task).ToBoolean());
                     }
                 case (OperatorType.OP_LT):
                     {
-                        return left.Evaluate(task) < right.Evaluate(task);
+                        return new BoolExpressionValue(left.Evaluate(task).CompareTo(right.Evaluate(task)) < 0);
                     }
                 case (OperatorType.OP_LTE):
                     {
-                        return left.Evaluate(task) <= right.Evaluate(task);
+                        return new BoolExpressionValue(left.Evaluate(task).CompareTo(right.Evaluate(task)) <= 0);
                     }
                 case (OperatorType.OP_GT):
                     {
-                        return left.Evaluate(task) > right.Evaluate(task);
+                        return new BoolExpressionValue(left.Evaluate(task).CompareTo(right.Evaluate(task)) > 0);
                     }
                 case (OperatorType.OP_GTE):
                     {
-                        return left.Evaluate(task) >= right.Evaluate(task);
+                        return new BoolExpressionValue(left.Evaluate(task).CompareTo(right.Evaluate(task)) >= 0);
                     }
                 case (OperatorType.OP_EQ):
                     {
-                        return left.Evaluate(task) == right.Evaluate(task);
+                        return new BoolExpressionValue(left.Evaluate(task).Equals(right.Evaluate(task)));
                     }
                 case (OperatorType.OP_NEQ):
                     {
-                        return left.Evaluate(task) != right.Evaluate(task);
+                        return new BoolExpressionValue(!left.Evaluate(task).Equals(right.Evaluate(task)));
                     }
                 default:
                     throw new ArgumentException("Unknown operator " + operatorID);

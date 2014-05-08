@@ -1,4 +1,5 @@
-﻿using Hansoft.ObjectWrapper;
+﻿using Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Value;
+using Hansoft.ObjectWrapper;
 using HPMSdk;
 using System;
 using System.Collections.Generic;
@@ -11,8 +12,8 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
     {
         List<ListenerData> affectedBy;
         List<Assignment> assigments;
-        private Expression expression;
-        private string expressionStr; 
+        private Expression conditional;
+        private string expression; 
 
         public Condition()
         {
@@ -24,26 +25,30 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
         /// </summary>
         /// <param name="expressionStr"> The string to create a condition for</param>
         /// <param name="errors"> The list of errors that came up during parsing</param>
-        public void parse(string expressionStr, ref List<string> errors)
+        public void parse(string expression, ref List<string> errors)
         {
-            this.expressionStr = expressionStr;
-            this.expression = Expression.parse(expressionStr, ref errors);
-            if (expression == null)
+            this.expression = expression;
+            this.conditional = Expression.parse(expression, ref errors);
+            if (conditional == null)
             {
-                errors.Add("Failed to parse the expression: " + expressionStr);
+                errors.Add("Failed to parse the expression: " + ConditionalExpression);
                 return;
             }
             affectedBy = new List<ListenerData>();
-            expression.AddAffectedBy(ref affectedBy);
+            conditional.AddAffectedBy(ref affectedBy);
         }
 
+        /// <summary>
+        /// Adds a new assignment operation to this condition.
+        /// </summary>
+        /// <param name="assignment">the assignment to add.</param>
         public void AddAssigment(Assignment assignment)
         {
             assigments.Add(assignment);
         }
 
         /// <summary>
-        /// Looks through the expression and it's statements to find potential infinite loops.
+        /// Looks through the expression and its statements to find potential infinite loops.
         /// If a loop is found it will return true and add an error to the list.
         /// </summary>
         /// <param name="errors">errors will be added to the list</param>
@@ -60,34 +65,65 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
                 if(assignmentFields.Contains(data))
                 {
                     foundLoop = true;
-                    errors.Add("Found a possible infinite loop in condition (" + expressionStr + "). Where the field: (" + data.TaskField + ", " + data.CustomColumnName + "). Exists in both condition and assignement.");
+                    errors.Add("Found a possible infinite loop in condition (" + expression + "). Where the field: (" + data.TaskField + ", " + data.CustomColumnName + "). Exists in both condition and assignement.");
                 }
             }
             return foundLoop;
         }
 
-        public string ExpressionStr
+        /// <summary>
+        /// Getter for the conditional expression string
+        /// </summary>
+        public string ConditionalExpression
         {
-            get { return expressionStr; }
+            get { return expression; }
         }
 
+        /// <summary>
+        /// Will evaluate this condition on the incoming task to see if the condition is triggered.
+        /// </summary>
+        /// <param name="task">The task to match the condition to</param>
+        /// <returns></returns>
         public bool Evaluate(Task task)
         {
-            ExpressionValue value = expression.Evaluate(task);
-            if (value.Type != ExpressionValueType.BOOL)
-                throw new ArgumentException("Condition exception that doesn't evaluate to bool: " + expressionStr);
-            return value.ToBoolean();
+            ExpressionValue value;
+            try 
+            { 
+                value = conditional.Evaluate(task);
+            }
+            catch(Exception e)
+            {
+                throw new Exception("Error evaluating expression: '" + expression + "'\n" + e.Message);
+            }
+
+            if (!(value is BoolExpressionValue))
+                throw new ArgumentException("Condition exception that doesn't evaluate to bool: " + expression);
+            return value.ToInt() != 0;
         }
 
+        /// <summary>
+        /// Executes all assignments in this condition.
+        /// </summary>
+        /// <param name="task">the task to execute the assignments on.</param>
         public void ExcuteAssignments(Task task)
         {
             foreach (Assignment assignment in assigments)
-                assignment.Execute(task);
+            {
+                try
+                {
+                    assignment.Execute(task);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("Error executing assignment : '" + assignment.AssignmentExpression + "'\n" + e.Message);
+                }
+            }
         }
 
-        /*
-         * Returns the list of fields this expression is affected by.
-         */
+        /// <summary>
+        /// Returns the list of fields that this condition is affected by.
+        /// </summary>
+        /// <returns>the list of fields that this condition is affected by</returns>
         public List<ListenerData> AffectedBy()
         {
             return affectedBy;

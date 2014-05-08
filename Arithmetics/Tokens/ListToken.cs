@@ -1,4 +1,5 @@
-﻿using Hansoft.ObjectWrapper;
+﻿using Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Value;
+using Hansoft.ObjectWrapper;
 using HPMSdk;
 using System;
 using System.Collections.Generic;
@@ -37,17 +38,12 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
         public ExpressionValue Evaluate(Task task)
         {
             List<object> values = new List<object>();
-            ExpressionValueType returnType = ExpressionValueType.UNKNOWN;
             foreach (IExpressionItem expression in value)
             {
                 ExpressionValue eValue = expression.Evaluate(task);
-                values.Add(eValue.Value);
-                if (returnType != ExpressionValueType.UNKNOWN && returnType != eValue.Type)
-                    throw new ArgumentException("Lists cannot have different types in them.");
-                else
-                    returnType = eValue.Type;
+                values.Add(eValue);
             }
-            return new ExpressionValue(ExpressionValueType.LIST, values);
+            return new ListExpressionValue(values);
         }
 
         /// <summary>

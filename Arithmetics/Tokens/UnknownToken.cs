@@ -1,4 +1,5 @@
-﻿using Hansoft.ObjectWrapper;
+﻿using Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Value;
+using Hansoft.ObjectWrapper;
 using HPMSdk;
 using System;
 using System.Collections.Generic;

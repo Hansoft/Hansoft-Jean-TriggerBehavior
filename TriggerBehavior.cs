@@ -55,11 +55,18 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior
     /// </summary>
     public class TriggerBehavior : AbstractBehavior
     {
-        string projectName;
+        // The projects being monitored
+        string projectQuery;
+        // The view being monitored
         EHPMReportViewType viewType;
+
+        // The list of projects we're monitoring
         List<Project> projects;
+        // Is the project query an exclusive query
         bool inverted = false;
+        // The lsit of project views being monitored
         List<ProjectView> projectViews;
+        // The lsit of triggers in the behavior
         List<Condition> conditions;
         string title;
         bool initializationOK = false;
@@ -67,7 +74,7 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior
         public TriggerBehavior(XmlElement configuration)
             : base(configuration) 
         {
-            projectName = GetParameter("HansoftProject");
+            projectQuery = GetParameter("HansoftProject");
             string invert = GetParameter("InvertedMatch");
             if (invert != null)
                 inverted = invert.ToLower().Equals("yes");
@@ -81,11 +88,14 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior
             get { return title; }
         }
         
+        /// <summary>
+        /// Initializes all projects after the session has been connected.
+        /// </summary>
         private void InitializeProjects()
         {
             projects = new List<Project>();
             projectViews = new List<ProjectView>();
-            projects = HPMUtilities.FindProjects(projectName, inverted);
+            projects = HPMUtilities.FindProjects(projectQuery, inverted);
             foreach (Project project in projects)
             {
                 ProjectView projectView;
@@ -100,6 +110,9 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior
             }
         }
 
+        /// <summary>
+        /// Called when the session is connected
+        /// </summary>
         public override void Initialize()
         {
             initializationOK = false;
@@ -108,7 +121,22 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior
         }
 
 
-        // TODO: Subject to refactoring
+        /// <summary>
+        /// Extracts all conditions and their associated statements from the XML. 
+        /// XML Syntax:
+        ///  <Condition Expression="<conditional expression>"> 
+        ///     assignement statement (must contain a =) 
+        ///     assignement statement (must contain a =) 
+        ///     assignement statement (must contain a =) 
+        ///     assignement statement (must contain a =) 
+        /// </Condition>
+        ///  <Condition Expression="<conditional expression>"> 
+        ///     assignement statement (must contain a =) 
+        ///     assignement statement (must contain a =) 
+        /// </Condition>
+        /// </summary>
+        /// <param name="parent">the xml element containing all the XML elements.</param>
+        /// <returns></returns>
         private List<Condition> GetConditions(XmlElement parent)
         {
             List<Condition> conditions = new List<Condition>();
@@ -140,8 +168,12 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior
             return conditions;
         }
 
-        //Returns true if the task is in the subset of project views this behaviour is monitoring
-        private Boolean isTaskInViews(Task task)
+        /// <summary>
+        /// Returns true if the task is in the subset of project views this behaviour is monitoring
+        /// </summary>
+        /// <param name="task">The task to check if it's in any of the views</param>
+        /// <returns>true if the task is in the monitored scope</returns>
+        private Boolean IsTaskInViews(Task task)
         {
             foreach (ProjectView projectView in projectViews)
             {
@@ -169,17 +201,17 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior
             }
         }
 
-        public override void OnBeginProcessBufferedEvents(EventArgs e)
+        /// <summary>
+        /// Checks if the change on the task triggers any conditions. If so all the assignments in that
+        /// condition will be executed.
+        /// </summary>
+        /// <param name="task">the task that has changed</param>
+        /// <param name="fieldChanged">the field that has changed</param>
+        /// <param name="columnHash">if it was a custom column the hash for the column must be included</param>
+        private void EvaluateTask(Task task, EHPMTaskField fieldChanged, uint columnHash = 0)
         {
-        }
-
-        public override void OnEndProcessBufferedEvents(EventArgs e)
-        {            
-        }
-
-        private void EvaluateTask(Task task, EHPMTaskField fieldChanged, uint columnHash)
-        {
-            if(isTaskInViews(task))
+            // Check if the task is in scope
+            if(IsTaskInViews(task))
             {
                 string columnName = "";
                 if (columnHash > 0)
@@ -191,24 +223,34 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior
                 ListenerData trigger = new ListenerData(fieldChanged, columnName);
                 foreach (Condition condition in conditions)
                 {
+                    // Check if the condition actually cares about this change (for performance) before evaluating.
                     if (condition.AffectedBy().Contains(trigger) && condition.Evaluate(task))
                     {
                         Debug.WriteLine("Trigger: " + fieldChanged + "-" + columnName);
-                        Debug.WriteLine("Condition (" + condition.ExpressionStr + ") activated for " + task.Name);
+                        Debug.WriteLine("Condition (" + condition.ConditionalExpression + ") activated for " + task.Name);
                         condition.ExcuteAssignments(task);
                     }
                 }
             }
         }
+
+        /// <summary>
+        /// Called when a task has changed.
+        /// </summary>
+        /// <param name="e">the data containing information about the change</param>
         public override void OnTaskChange(TaskChangeEventArgs e)
         {
             if (initializationOK)
             {
                 Task task = Task.GetTask(e.Data.m_TaskID);
-                EvaluateTask(task,  e.Data.m_FieldChanged, 0);
+                EvaluateTask(task,  e.Data.m_FieldChanged);
             }
         }
 
+        /// <summary>
+        /// Called when a custom column is changed on a task.
+        /// </summary>
+        /// <param name="e">the data containing information about the change</param>
         public override void OnTaskChangeCustomColumnData(TaskChangeCustomColumnDataEventArgs e)
         {
             if (initializationOK)
@@ -218,14 +260,34 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior
             }
         }
 
+        /// <summary>
+        /// We are not buffering events in this behavior
+        /// </summary>
+        /// <param name="e"></param>
+        public override void OnBeginProcessBufferedEvents(EventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// We are not buffering events in this behavior
+        /// </summary>
+        /// <param name="e"></param>
+        public override void OnEndProcessBufferedEvents(EventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// TODO: Possibly add triggers when tasks are created.
+        /// </summary>
+        /// <param name="e"></param>
         public override void OnTaskCreate(TaskCreateEventArgs e)
         {
         }
 
-        public override void OnTaskDelete(TaskDeleteEventArgs e)
-        {
-        }
-
+        /// <summary>
+        /// TODO: Possibly add triggers when tasks are moved.
+        /// </summary>
+        /// <param name="e"></param>
         public override void OnTaskMove(TaskMoveEventArgs e)
         {
         }

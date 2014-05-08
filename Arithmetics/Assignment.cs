@@ -14,14 +14,23 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
         Expression right;
         string expression;
 
+
+        /// <summary>
+        /// Getter for the expression string in this assignment.
+        /// </summary>
+        public string AssignmentExpression
+        {
+            get { return expression; }
+        }
+
         /// <summary>
         /// Parses the string and creates a assignment expression. If it doesn't contain an = an error will be thrown.
         /// </summary>
         /// <param name="expressionStr"> The string to create a assignment for</param>
         /// <param name="errors"> The list of errors that came up during parsing</param>
-        public void parse(string expressionStr, ref List<string> errors)
+        public void parse(string expression, ref List<string> errors)
         {
-            this.expression = expressionStr.Trim();
+            this.expression = expression.Trim();
             int assignmentOpPos = expression.IndexOf("=");
             if (assignmentOpPos == -1)
                 throw new ArgumentException("Malformed assignemnt. Expected a = : " + expression);
