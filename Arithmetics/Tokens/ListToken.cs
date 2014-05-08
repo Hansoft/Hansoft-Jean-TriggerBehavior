@@ -36,12 +36,12 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
         /// <returns>A list of containing the evaluated results of all the elements in the list</returns>
         public ExpressionValue Evaluate(Task task)
         {
-            List<ExpressionValue> values = new List<ExpressionValue>();
+            List<object> values = new List<object>();
             ExpressionValueType returnType = ExpressionValueType.UNKNOWN;
             foreach (IExpressionItem expression in value)
             {
                 ExpressionValue eValue = expression.Evaluate(task);
-                values.Add(eValue);
+                values.Add(eValue.Value);
                 if (returnType != ExpressionValueType.UNKNOWN && returnType != eValue.Type)
                     throw new ArgumentException("Lists cannot have different types in them.");
                 else

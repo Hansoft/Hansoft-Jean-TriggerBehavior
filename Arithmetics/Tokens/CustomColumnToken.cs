@@ -33,7 +33,7 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
                 case(EHPMProjectCustomColumnsColumnType.DateTimeWithTime):
                 case(EHPMProjectCustomColumnsColumnType.DropList):
                 case (EHPMProjectCustomColumnsColumnType.Hyperlink):
-                case (EHPMProjectCustomColumnsColumnType.MultiSelectionDropList):
+                case (EHPMProjectCustomColumnsColumnType.MultiSelectionDropList): 
                 case (EHPMProjectCustomColumnsColumnType.Resources):
                     {
                         return new ExpressionValue(ExpressionValueType.CUSTOMVALUE, value);

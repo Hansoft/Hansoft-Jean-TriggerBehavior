@@ -15,7 +15,7 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
         FLOAT,
         BOOL,
         STRING,
-        LIST, // Remember that a expression value of type list will contain expression values once it is evaluated.
+        LIST, 
         CUSTOMVALUE
     }
 
@@ -50,7 +50,12 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
         public static ExpressionValue operator +(ExpressionValue left, ExpressionValue right)
         {
             // Always convert to string if one of the sides is a string expression
-            if (left.Type == ExpressionValueType.STRING || right.Type == ExpressionValueType.STRING)
+            if (left.Type == ExpressionValueType.LIST)
+            {
+                ((IList)left.Value).Add(right.Value);
+                return new ExpressionValue(ExpressionValueType.LIST, left.Value);
+            }
+            else if (left.Type == ExpressionValueType.STRING || right.Type == ExpressionValueType.STRING)
                 return new ExpressionValue(ExpressionValueType.STRING, left.ToString() + right.ToString());
             else if (left.Type == ExpressionValueType.FLOAT)
                 return new ExpressionValue(ExpressionValueType.FLOAT, left.ToFloat() + right.ToFloat());
@@ -61,10 +66,6 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
                 else
                     return new ExpressionValue(ExpressionValueType.INT, left.ToInt() + right.ToInt());
             }
-            else if (left.Type == ExpressionValueType.LIST)
-            {
-                ((IList)left.Value).Add(right.Value);
-            }
             return new ExpressionValue(ExpressionValueType.STRING, left.ToString() + right.ToString());
         }
 
@@ -72,10 +73,6 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
         {
             if (left.Type == ExpressionValueType.FLOAT || right.Type == ExpressionValueType.FLOAT)
                 return new ExpressionValue(ExpressionValueType.FLOAT, left.ToFloat() * right.ToFloat());
-            else if (left.Type == ExpressionValueType.LIST)
-            {
-                ((IList)left.Value).Add(right);
-            }
             return new ExpressionValue(ExpressionValueType.INT, left.ToInt() * right.ToInt());
         }
 
@@ -156,11 +153,7 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics
                 IList eList = Value as IList;
                 foreach (object obj in eList)
                 {
-                    if (!(obj is ExpressionValue))
-                    {
-                        throw new ArgumentException("Something went bad in a list. Should be filled with expression values.");
-                    }
-                    string str = (obj as ExpressionValue).Value as string;
+                    string str = obj as string;
                     if (str == null)
                     {
                         throw new ArgumentException("Cannot convert to a string list unless all expression values are strings");

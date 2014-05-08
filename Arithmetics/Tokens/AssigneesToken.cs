@@ -60,11 +60,7 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
                 IList newAssignments = value.Value as IList;
                 foreach (object obj in newAssignments)
                 {
-                    if (!(obj is ExpressionValue))
-                    {
-                        throw new ArgumentException("Something went bad in a list. Should be filled with expression values.");
-                    }
-                    string userName = (obj as ExpressionValue).Value as string;
+                    string userName = obj as string;
                     if (userName == null)
                     {
                         throw new ArgumentException("Cannot assign other the list of strings or single strings to an assigne token.");

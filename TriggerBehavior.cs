@@ -16,30 +16,43 @@ using System.Data;
 using System.Diagnostics;
 using Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics;
 
-/*
- * TriggerBehavior is a behavior part of Jean that allows actions to be triggered when tasks changes and a condition on the specific task is matched.
- * Typically this can be used when you want to set column values based of some other column, or if you want to make an arithmetic calculation on one
- * column, where the value should be put into another column.
- * Example syntax:
- * <TriggerBehavior HansoftProject="Test Cases" View="Backlog">
-      <Condition Expression="$WorkflowStatus == 'Test Passed'">
-        $Last Run = TIMENOW
-        $Latest Pass = TIMENOW
-        $Times Run = $Times Run + 1
-        $Times Passed = $Times Passed + 1
-      </Condition>
-      <Condition Expression="$WorkflowStatus == 'Test Failed'">
-        $Last Run = TIMENOW
-        $Times Run = $Times Run + 1
-      </Condition>
-      <Condition Expression="$Times Run > 5">
-        $Test steps = $Test steps + 'Number of times run: '+ $Times Run +'\n'
-      </Condition>
-    </TriggerBehavior>
- * 
- */
+
 namespace Hansoft.Jean.Behavior.TriggerBehavior
 {
+    /// <summary>
+    /// TriggerBehavior is a behavior part of Jean that allows actions to be triggered when tasks changes and a condition on the specific task is matched.
+    /// Typically this can be used when you want to set column values based of some other column, or if you want to make an arithmetic calculation on one
+    /// column, where the value should be put into another column.
+
+    /// Syntax:
+    /// ---------------------------------------------------------------------------------
+    /// Column syntax: $COLUMNNAME (case sensitive)
+    /// String syntax: 'String'
+    /// Constants: TIMENOW
+    /// Operators: +,-,/,*,<,<=,>,>=,!=,==
+    /// Paranthesis to encapsulate expressions
+    /// List syntax: [item1,item2,item3]
+    /// 
+    /// 
+    /// Example syntax:
+    /// <TriggerBehavior HansoftProject="Test Cases" View="Backlog">
+    ///       <Condition Expression="$WorkflowStatus == 'Test Passed'">
+    ///         $Last Run = TIMENOW
+    ///         $Latest Pass = TIMENOW
+    ///         $Times Run = $Times Run + 1
+    ///         $Times Passed = $Times Passed + 1
+    ///       </Condition>
+    ///       <Condition Expression="$WorkflowStatus == 'Test Failed'">
+    ///         $Last Run = TIMENOW
+    ///         $Times Run = $Times Run + 1
+    ///       </Condition>
+    ///       <Condition Expression="$Times Run > 5">
+    ///         $Test steps = $Test steps + 'Number of times run: '+ $Times Run +'\n'
+    ///       </Condition>
+    ///     </TriggerBehavior>    
+    ///     
+    /// Exceptions in the parsing/execution process will be Logged in the Windows Event Viewer.
+    /// </summary>
     public class TriggerBehavior : AbstractBehavior
     {
         string projectName;
