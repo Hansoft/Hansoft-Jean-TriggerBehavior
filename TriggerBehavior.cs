@@ -134,6 +134,9 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior
         ///     assignement statement (must contain a =) 
         ///     assignement statement (must contain a =) 
         /// </Condition>
+        /// 
+        /// TODO: Fix the tokenizer so that = is an operator as any other and allow
+        /// for custom actions to happens (such as for example send mail)
         /// </summary>
         /// <param name="parent">the xml element containing all the XML elements.</param>
         /// <returns></returns>

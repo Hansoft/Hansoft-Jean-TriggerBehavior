@@ -66,6 +66,10 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
                         return new DefaultEnumColumnToken(EHPMTaskField.Status, EHPMProjectDefaultColumn.Status, "Status");
                     case ("Hyperlink"):
                         return new DefaultStringColumnToken(EHPMTaskField.Hyperlink, EHPMProjectDefaultColumn.Hyperlink, "Hyperlink");
+                    case ("ItemName"):
+                    case ("Description"):
+                    case ("Name"): //Covering all bases on the item name attribute
+                        return new DefaultStringColumnToken(EHPMTaskField.Description, EHPMProjectDefaultColumn.ItemName, "Name");
                     case ("StepsToReproduce"):
                         return new DefaultStringColumnToken(EHPMTaskField.StepsToReproduce, EHPMProjectDefaultColumn.StepsToReproduce, "StepsToReproduce");
                     case ("DetailedDescription"):
@@ -93,7 +97,6 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
                     case ("PercentComplete"):
                     case ("Type"):
                     case ("Comment"):
-                    case ("Description"):
                     case ("LinkedToMilestone"):
                     case ("LinkedToSprint"):
                     case ("AttachedDocuments"):
