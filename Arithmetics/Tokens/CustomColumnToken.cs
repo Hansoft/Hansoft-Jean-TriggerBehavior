@@ -125,7 +125,7 @@ namespace Hansoft.Jean.Behavior.TriggerBehavior.Arithmetics.Tokens
                 throw new ArgumentException("Cannot set the value for custom column: " + name +". You have to update the SDK to handle this column type.");
             }
             if (PreferedTypeDate(customColumn.m_Type))
-                task.SetCustomColumnValue(name, HPMUtilities.HPMDateTime(value.ToDateTime(null), customColumn.m_Type == EHPMProjectCustomColumnsColumnType.DateTime));
+                task.SetCustomColumnValue(name, CustomColumnValue.FromEndUserString(task, customColumn, value.ToString())); 
             else if (PreferedTypeInt(customColumn.m_Type))
                 task.SetCustomColumnValue(name, value.ToInt());
             else if (PreferedTypeDouble(customColumn.m_Type))
